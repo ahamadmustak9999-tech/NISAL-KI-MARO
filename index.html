@@ -424,7 +424,7 @@
 
     // Hidden External Audio Files from GitHub Repository
     const ENTRY_AUDIO_SRC = './sounds/entry.mp3';
-    const HIT_AUDIO_SRC = './sounds/hit.mp3';
+    const HIT_AUDIO_SRC = './sounds/hit1.mp3';
     // Optional 1-Second Mosquito Hit Sound (Plays ONLY if ./sounds/mosquito-hit.mp3 is set)
     const MOSQUITO_HIT_ADDON_SRC = './sounds/mosquito-hit.mp3';
 
@@ -772,7 +772,7 @@
         } catch (e) {}
     }
 
-    // Play ./sounds/hit.mp3 on mosquito hit, with clean Web Audio fallback if needed
+    // Play ./sounds/hit1.mp3 on mosquito hit, with clean Web Audio fallback if needed
     function playHitSound() {
         if (isMuted) return;
         unlockAudio();
