@@ -333,7 +333,7 @@
     // Custom Uploaded Face Photo (Sleeping Character)
     let customFaceImg = null;
 
-    // Hidden Private Mosquito Custom Face (Loads silently from ./images/mosquito-face.png or .jpg)
+    // Hidden Private Flying Target Photo (Loads silently from ./images/mosquito-face.png or .jpg)
     const MOSQUITO_FACE_SOURCES = ['./images/mosquito-face.png', './images/mosquito-face.jpg'];
     let mosquitoCustomFaceImg = null;
     let mosquitoFaceSourceIndex = 0;
@@ -377,7 +377,7 @@
         wingPhase: 0,
         wavePhase: 0,
         baseY: viewH * 0.28,
-        radius: 22,
+        radius: 30,
         alive: true,
         respawnDelay: 0,
         offscreenPause: 0,
@@ -883,7 +883,7 @@
         const speed = 150 + Math.random() * 55 + speedBoost;
 
         mosquito.dir = fromLeft ? 1 : -1;
-        mosquito.x = fromLeft ? -28 : viewW + 28;
+        mosquito.x = fromLeft ? -36 : viewW + 36;
         mosquito.baseY = Math.max(125, Math.min(viewH * 0.48, viewH * (0.19 + Math.random() * 0.26)));
         mosquito.y = mosquito.baseY;
         mosquito.vx = mosquito.dir * speed;
@@ -908,7 +908,7 @@
                 const speedBoost = Math.min(score * 3.2, 165);
                 const speed = 150 + Math.random() * 55 + speedBoost;
                 mosquito.dir = fromLeft ? 1 : -1;
-                mosquito.x = fromLeft ? -28 : viewW + 28;
+                mosquito.x = fromLeft ? -36 : viewW + 36;
                 mosquito.baseY = Math.max(125, Math.min(viewH * 0.48, viewH * (0.19 + Math.random() * 0.26)));
                 mosquito.vx = mosquito.dir * speed;
             }
@@ -921,10 +921,10 @@
         mosquito.y = mosquito.baseY + Math.sin(mosquito.wavePhase) * 24;
 
         // When mosquito exits screen bounds, pause briefly offscreen (sound stops automatically)
-        if (mosquito.dir === 1 && mosquito.x > viewW + 34) {
+        if (mosquito.dir === 1 && mosquito.x > viewW + 42) {
             mosquito.offscreenPause = 0.75 + Math.random() * 0.65;
             stopAndResetEntryAudio();
-        } else if (mosquito.dir === -1 && mosquito.x < -34) {
+        } else if (mosquito.dir === -1 && mosquito.x < -42) {
             mosquito.offscreenPause = 0.75 + Math.random() * 0.65;
             stopAndResetEntryAudio();
         }
@@ -1467,9 +1467,70 @@
 
         ctx.save();
         ctx.translate(mosquito.x, mosquito.y);
-        ctx.scale(mosquito.dir, 1);
 
         const flap = Math.sin(mosquito.wingPhase) * 0.45;
+
+        // If custom photo is set in ./images/mosquito-face.png, fly that large clear photo directly
+        if (mosquitoCustomFaceImg) {
+            // Fluttering wings behind the large face photo
+            ctx.save();
+            ctx.scale(mosquito.dir, 1);
+
+            ctx.save();
+            ctx.translate(-8, -16);
+            ctx.rotate(-0.45 + flap);
+            ctx.fillStyle = 'rgba(220, 226, 234, 0.78)';
+            ctx.strokeStyle = '#555b64';
+            ctx.lineWidth = 1.4;
+            ctx.beginPath();
+            ctx.ellipse(-10, -8, 16, 6.2, -0.35, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            ctx.restore();
+
+            ctx.save();
+            ctx.translate(6, -16);
+            ctx.rotate(-0.2 - flap);
+            ctx.fillStyle = 'rgba(235, 240, 246, 0.85)';
+            ctx.strokeStyle = '#555b64';
+            ctx.lineWidth = 1.4;
+            ctx.beginPath();
+            ctx.ellipse(-8, -10, 15, 5.8, -0.25, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            ctx.restore();
+
+            ctx.restore();
+
+            // Large, clear upright face circle (radius 29px -> ~58px diameter)
+            const faceR = 29;
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(0, 0, faceR, 0, Math.PI * 2);
+            ctx.clip();
+
+            const aspect = mosquitoCustomFaceImg.width / mosquitoCustomFaceImg.height;
+            let dw = faceR * 2.15;
+            let dh = faceR * 2.15;
+            if (aspect > 1) dw = dh * aspect;
+            else dh = dw / aspect;
+
+            ctx.drawImage(mosquitoCustomFaceImg, -dw * 0.5, -dh * 0.5, dw, dh);
+            ctx.restore();
+
+            ctx.strokeStyle = '#111111';
+            ctx.lineWidth = 2.6;
+            ctx.beginPath();
+            ctx.arc(0, 0, faceR, 0, Math.PI * 2);
+            ctx.stroke();
+
+            ctx.restore();
+            return;
+        }
+
+        // Default Mosquito Drawing when no custom face image is uploaded
+        ctx.scale(mosquito.dir, 1);
+
         ctx.save();
         ctx.translate(-2, -4);
         ctx.rotate(-0.45 + flap);
@@ -1541,58 +1602,29 @@
         ctx.fill();
         ctx.stroke();
 
-        // Mosquito Head (Custom hidden photo if uploaded in ./images/mosquito-face.png, else default)
-        if (mosquitoCustomFaceImg) {
-            ctx.save();
-            ctx.translate(10, -2);
-            // Keep uploaded face upright regardless of mosquito left/right flight direction
-            ctx.scale(mosquito.dir, 1);
-            const faceR = 13;
-            ctx.beginPath();
-            ctx.arc(0, 0, faceR, 0, Math.PI * 2);
-            ctx.clip();
+        // Head & sharp proboscis needle
+        ctx.fillStyle = '#181a1f';
+        ctx.beginPath();
+        ctx.arc(8, -1, 3.6, 0, Math.PI * 2);
+        ctx.fill();
 
-            const aspect = mosquitoCustomFaceImg.width / mosquitoCustomFaceImg.height;
-            let dw = faceR * 2.15;
-            let dh = faceR * 2.15;
-            if (aspect > 1) dw = dh * aspect;
-            else dh = dw / aspect;
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(9, -2, 1.3, 0, Math.PI * 2);
+        ctx.fill();
 
-            ctx.drawImage(mosquitoCustomFaceImg, -dw * 0.5, -dh * 0.5, dw, dh);
-            ctx.restore();
+        ctx.strokeStyle = '#111111';
+        ctx.lineWidth = 1.7;
+        ctx.beginPath();
+        ctx.moveTo(11, 0);
+        ctx.lineTo(20, 4);
+        ctx.stroke();
 
-            ctx.save();
-            ctx.translate(10, -2);
-            ctx.strokeStyle = '#111111';
-            ctx.lineWidth = 1.8;
-            ctx.beginPath();
-            ctx.arc(0, 0, 13, 0, Math.PI * 2);
-            ctx.stroke();
-            ctx.restore();
-        } else {
-            ctx.fillStyle = '#181a1f';
-            ctx.beginPath();
-            ctx.arc(8, -1, 3.6, 0, Math.PI * 2);
-            ctx.fill();
-
-            ctx.fillStyle = '#ffffff';
-            ctx.beginPath();
-            ctx.arc(9, -2, 1.3, 0, Math.PI * 2);
-            ctx.fill();
-
-            ctx.strokeStyle = '#111111';
-            ctx.lineWidth = 1.7;
-            ctx.beginPath();
-            ctx.moveTo(11, 0);
-            ctx.lineTo(20, 4);
-            ctx.stroke();
-
-            ctx.lineWidth = 1.1;
-            ctx.beginPath();
-            ctx.moveTo(10, -3);
-            ctx.lineTo(15, -8);
-            ctx.stroke();
-        }
+        ctx.lineWidth = 1.1;
+        ctx.beginPath();
+        ctx.moveTo(10, -3);
+        ctx.lineTo(15, -8);
+        ctx.stroke();
 
         ctx.restore();
     }
